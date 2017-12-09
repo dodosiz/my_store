@@ -1,3 +1,10 @@
+-- -----------------------------------------------------------------
+-- Description: This is the file to create the my_store database tables,
+-- 				it creates all the tables along with the table relationships.
+--
+-- Author:		Asvestopoulos Theodosis
+-- -----------------------------------------------------------------
+
 -- a general table for the addresses
 CREATE TABLE addresses (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
@@ -36,13 +43,21 @@ CREATE TABLE product_categories (
 -- all the products the bussiness is selling
 CREATE TABLE products (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    product_name VARCHAR(100) NOT NULL,
+    product_name VARCHAR(200) NOT NULL,
     price FLOAT(10,2) UNSIGNED NOT NULL,
     category_id INT(11),
-    vendor_id INT(11),
-    FOREIGN KEY (category_id) REFERENCES product_categories(id),
+    FOREIGN KEY (category_id) REFERENCES product_categories(id)
+);
+
+-- junction table for products and vendors
+CREATE TABLE products_vendors (
+	id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    product_id INT(11) NOT NULL,
+    vendor_id INT(11) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (vendor_id) REFERENCES vendors(id)
 );
+ALTER TABLE products_vendors ADD CONSTRAINT UNIQUE(product_id, vendor_id);
 
 -- the categories each product belongs
 CREATE TABLE sub_product_categories (
@@ -56,11 +71,20 @@ CREATE TABLE sub_products (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     price FLOAT(10,2) UNSIGNED NOT NULL,
-    vendor_id INT(11) NOT NULL,
     category_id INT(11) NOT NULL,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id),
     FOREIGN KEY (category_id) REFERENCES sub_product_categories(id)
 );
+
+-- junction table for sub products and vendors
+CREATE TABLE sub_products_vendors (
+	id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    sub_product_id INT(11) NOT NULL,
+    vendor_id INT(11) NOT NULL,
+    FOREIGN KEY (sub_product_id) REFERENCES sub_products(id),
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+);
+
+ALTER TABLE sub_products_vendors ADD CONSTRAINT UNIQUE (sub_product_id, vendor_id);
 
 -- the storage or warehouses where the products or sub products are stored
 CREATE TABLE warehouse (
@@ -143,7 +167,9 @@ CREATE TABLE orders (
     amound INT(100) DEFAULT 0,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     customer_id INT(11),
-    FOREIGN KEY (customer_id) REFERENCES customers(id)
+    product_id INT(11),
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 -- junction table for sub products-storage many to many relationship
